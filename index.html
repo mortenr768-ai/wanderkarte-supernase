@@ -44,6 +44,27 @@
     .count { flex: 0 0 auto; color: var(--accent); border: 1px solid rgba(140,224,188,.25); background: rgba(140,224,188,.09); border-radius: 999px; padding: 3px 7px; font-size: 10px; font-weight: 800; }
     .notice { background: rgba(255,204,128,.08); border: 1px solid rgba(255,204,128,.22); color: #e7d7bf; border-radius: 10px; padding: 9px 10px; font-size: 10px; line-height: 1.45; margin: 8px 0; }
     .route-list { display: grid; gap: 8px; }
+    .route-filters { border:1px solid var(--line); border-radius:12px; padding:10px; margin:8px 0 12px; background:rgba(255,255,255,.035); }
+    .route-filters input,.route-filters select { width:100%; margin-bottom:7px; min-width:0; }
+    .route-filters .inline-check { margin:5px 0; }
+    .route-stats {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:9px 0;}
+    .route-stats div {background:rgba(140,224,188,.08);padding:9px 6px;border-radius:8px;font-size:12px;font-weight:800;text-align:center;}
+    .route-stats small {display:block;font-size:9px;color:var(--muted);font-weight:500;margin-bottom:3px;}
+    .profile {background:rgba(0,0,0,.14);border-radius:9px;padding:8px;margin:9px 0;}
+    .profile svg {width:100%;height:110px;display:block;}
+    .profile p {font-size:10px;color:var(--muted);margin:4px 0;}
+    .difficulty-pill {border-radius:999px;border:1px solid var(--line);padding:3px 8px;font-size:10px;font-weight:800;display:inline-block;margin:3px 0 8px;}
+    .difficulty-pill[data-level="Schwer"] {color:#ffb1a9;border-color:#bb6460;}
+    .difficulty-pill[data-level="Mittel"] {color:#ffe0a3;border-color:#c5a063;}
+    .difficulty-pill[data-level="Leicht"] {color:#8ce0bc;border-color:#69ac92;}
+    .detail-more[hidden] {display:none;}
+    .detail-more {border-top:1px solid var(--line);padding-top:8px;margin-top:8px;}
+    .route-images img {cursor:zoom-in;}
+    #photoViewer {position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;}
+    #photoViewer[hidden] {display:none;}
+    #photoViewer img {max-width:95vw;max-height:78vh;object-fit:contain;}
+    #photoViewer button {margin-top:12px;}
+    
     .route-card { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.035); padding: 10px; }
     .route-card-title { font-size: 13px; font-weight: 800; line-height: 1.3; margin: 0 0 4px; overflow-wrap: anywhere; }
     .route-meta { color: var(--muted); font-size: 10px; line-height: 1.45; margin: 0 0 8px; }
@@ -140,6 +161,12 @@
 
     <div class="section-head"><p class="label">Wanderrouten</p><span id="routeCount" class="count">0 Routen</span></div>
     <p class="editor-help">Gespeicherte Routen lassen sich anzeigen oder als Wanderung starten. Starte mit den Beispielrouten erst, wenn du eigene Routen angelegt oder importiert hast.</p>
+    <div class="route-filters" aria-label="Wanderrouten filtern">
+      <input id="filterSearch" placeholder="🔎 Wanderung oder Ort suchen" aria-label="Routen suchen" />
+      <div class="field-grid"><select id="filterDifficulty" aria-label="Schwierigkeit"><option value="">Alle Schwierigkeitsgrade</option><option>Leicht</option><option>Mittel</option><option>Schwer</option></select><select id="filterDistance" aria-label="Streckenlänge"><option value="">Alle Streckenlängen</option><option value="5">Bis 5 km</option><option value="10">Bis 10 km</option><option value="15">Bis 15 km</option><option value="25">Bis 25 km</option></select></div>
+      <div class="field-grid"><input id="filterAscent" type="number" min="0" placeholder="Max. Aufstieg (Hm)" aria-label="Maximale Höhenmeter" /><label class="inline-check"><input id="filterNoVia" type="checkbox" /> Ohne Klettersteig</label></div>
+      <p id="filterResult" class="gps-note"></p>
+    </div>
     <div class="route-list" id="routeList"><div class="empty">Noch keine Routen vorhanden. Im Adminmodus kannst du Wanderungen anlegen oder ein Routenpaket importieren.</div></div>
 
     <div class="toolbar">
@@ -186,6 +213,7 @@
           <div class="field"><label for="routeAscent">Höhenmeter bergauf (Hm)</label><input id="routeAscent" type="number" min="0" max="30000" step="1" placeholder="z. B. 450" /></div>
           <div class="field"><label for="routeDescent">Höhenmeter bergab (Hm)</label><input id="routeDescent" type="number" min="0" max="30000" step="1" placeholder="z. B. 430" /></div>
         </div>
+        <div class="field-grid"><div class="field"><label for="routeDuration">Gehzeit (Stunden, optional)</label><input id="routeDuration" type="number" min="0" max="100" step="0.25" placeholder="z. B. 4,5" /></div><div class="field"><label for="routeSurface">Wegtyp</label><select id="routeSurface"><option value="">Nicht angegeben</option><option>Gut ausgebaut</option><option>Wald- und Feldweg</option><option>Schmaler Pfad</option><option>Felsiger Steig</option><option>Gemischt</option></select></div></div>
         <div class="field"><label for="routeFeatures">Besonderheiten (durch Komma trennen)</label><input id="routeFeatures" maxlength="300" placeholder="Treppen, Klettersteig, ausgesetzte Stellen" /></div>
         <div class="field"><label for="routePhotos">Bis zu 3 Highlight-Bilder (eine Zeile je Bild: Bildtitel | HTTPS-Bild-URL)</label><textarea id="routePhotos" maxlength="1800" placeholder="Aussicht vom Gipfel | https://beispiel.de/bild1.jpg
 Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Verwende nur Bilder, für die du Veröffentlichungsrechte hast. In dieser Version werden Bild-URLs gespeichert, keine Dateien hochgeladen.</p></div>
@@ -222,6 +250,7 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
     <p class="help"><strong>Hinweise:</strong> GPS benötigt Standortfreigabe und in der Regel HTTPS. Online-Routen werden mit Supabase und serverseitigen RLS-Regeln geschützt, sobald das Backend eingerichtet ist. Kartenbilder stammen von Esri; Routenberechnung nutzt einen öffentlichen Fußrouting-Dienst auf Basis von OpenStreetMap und ist nicht garantiert verfügbar. Kontrolliere Wanderwege immer vor Ort.</p>
   </section>
 
+  <div id="photoViewer" hidden role="dialog" aria-label="Highlight-Bild"><img id="photoViewerImg" alt="Wanderhighlight"><button id="photoViewerClose" type="button">Bild schließen ✕</button></div>
   <aside class="brand"><strong>Kartendaten:</strong> Satellitenbilder © Esri und Partner; Straßenkarte © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap-Mitwirkende</a>.<br />Fußwegberechnung über <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noreferrer">FOSSGIS Routing</a>. Die Ortssuche sendet Suchanfragen nur auf ausdrücklichen Klick an Nominatim.</aside>
 
   <div id="navigationBanner" class="nav-banner" hidden>
@@ -240,7 +269,7 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
       const CLOUD_CONFIG_KEY = 'wanderkarte.supabase.config.v1';
       // Für eine veröffentlichte Version hier die Werte aus Supabase eintragen.
       // Die Publishable-/anon-Key ist öffentlich; niemals service_role oder einen geheimen Server-Key einsetzen.
-      const DEFAULT_CLOUD_CONFIG = { url: 'https://bkkenmjfqtjwfcswipoh.supabase.co', anonKey: 'sb_publishable_bQBznY07dQLhYyHGAx4X5w_07zDSB86' };
+      const DEFAULT_CLOUD_CONFIG = { url: '', anonKey: '' };
       const map = L.map('map', { zoomControl: true, preferCanvas: true, tap: true }).setView(germanyCenter, 6);
       const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Imagery © Esri, Maxar, Earthstar Geographics and the GIS community' });
       const streets = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>' });
@@ -472,7 +501,19 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
           list.innerHTML = '<div class="empty">Noch keine Routen vorhanden. Im Adminmodus kannst du Wanderungen anlegen oder ein Routenpaket importieren.</div>';
           return;
         }
-        list.innerHTML = routes.map(route => {
+        const q = $('filterSearch').value.trim().toLocaleLowerCase('de');
+        const difficulty = $('filterDifficulty').value;
+        const maxDistance = Number($('filterDistance').value) || Infinity;
+        const maxAscent = $('filterAscent').value === '' ? Infinity : Number($('filterAscent').value);
+        const withoutVia = $('filterNoVia').checked;
+        const visible = routes.filter(r => {
+          const km = Number.isFinite(Number(r.distanceKm)) ? Number(r.distanceKm) : geometryDistanceKm(r.geometry);
+          const searchable = [r.name,r.description,r.routeSurface,...(r.points||[]).map(p=>p.label),...(r.features||[])].join(' ').toLocaleLowerCase('de');
+          return (!q || searchable.includes(q)) && (!difficulty || r.difficulty === difficulty) && km <= maxDistance && (maxAscent === Infinity || (r.elevationGainM != null && Number(r.elevationGainM) <= maxAscent)) && (!withoutVia || !(r.features||[]).some(f=>/klettersteig|via ferrata/i.test(f)));
+        });
+        $('filterResult').textContent = visible.length + ' von ' + routes.length + ' Routen';
+        if (!visible.length) {list.innerHTML = '<div class="empty">Keine passenden Wanderungen gefunden. Filter anpassen.</div>'; return;}
+        list.innerHTML = visible.map(route => {
           const distance = Number.isFinite(route.distanceKm) ? route.distanceKm : geometryDistanceKm(route.geometry);
           const points = Array.isArray(route.points) ? route.points : [];
           const stops = points.filter(p => p.type === 'stop').length;
@@ -485,15 +526,58 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
             const url = safeImageUrl(photo && photo.url);
             return url ? '<div class="route-image"><img src="' + escapeHtml(url) + '" alt="' + escapeHtml(photo.caption || route.name) + '" loading="lazy" referrerpolicy="no-referrer"><span>' + escapeHtml(photo.caption || 'Highlight') + '</span></div>' : '';
           }).join('') : '';
+          const hours = Number(route.durationHours) > 0 ? Number(route.durationHours).toLocaleString('de-DE',{maximumFractionDigits:1}) + ' Std.' : 'Nicht erfasst';
+          const profile = renderElevationProfile(route.elevationProfile);
           return '<article class="route-card" data-route-id="' + escapeHtml(route.id) + '">' +
             '<p class="route-card-title">' + escapeHtml(route.name) + '</p>' +
+            '<span class="difficulty-pill" data-level="' + escapeHtml(route.difficulty || '') + '">' + escapeHtml(route.difficulty || 'Unbewertet') + '</span>' +
             '<p class="route-meta">' + escapeHtml(route.difficulty || 'Nicht angegeben') + ' · ' + formatDistance(distance) + ascent + descent + ' · ' + stops + ' Zwischenstopp' + (stops === 1 ? '' : 's') +
             (start && end ? '<br>' + escapeHtml(start.label || 'Start') + ' → ' + escapeHtml(end.label || 'Ziel') : '') + '</p>' +
-            (route.description ? '<p class="route-desc">' + escapeHtml(route.description) + '</p>' : '') + features + (photos ? '<div class="route-images">' + photos + '</div>' : '') +
+            '<div class="route-stats"><div><small>Strecke</small>' + formatDistance(distance) + '</div><div><small>Aufstieg</small>' + (route.elevationGainM == null ? '–' : Math.round(Number(route.elevationGainM))+' Hm') + '</div><div><small>Gehzeit</small>' + escapeHtml(hours) + '</div></div>' +
+            (photos ? '<div class="route-images">' + photos + '</div>' : '') +
+            '<button type="button" data-action="details">Tourendetails / Höhenprofil ▾</button><div class="detail-more" hidden>' +
+            (route.description ? '<p class="route-desc">' + escapeHtml(route.description) + '</p>' : '') +
+            '<p class="route-meta">Wegtyp: ' + escapeHtml(route.routeSurface || 'Nicht angegeben') + '</p>' + features + profile +
+            (canManageRoutes() ? '<button type="button" data-action="elevation">Höhenprofil aus Geländedaten ermitteln</button>' : '') + '</div>' +
             '<div class="route-actions"><button type="button" data-action="show">Auf Karte anzeigen</button><button type="button" class="primary" data-action="start">Wanderung starten</button>' +
             '<button type="button" data-action="export">Route exportieren</button>' + (canManageRoutes() ? '<button type="button" data-action="edit">Bearbeiten</button><button type="button" class="danger" data-action="delete">Löschen</button>' : '') + '</div></article>';
         }).join('');
       }
+      function renderElevationProfile(profile) {
+        if (!Array.isArray(profile) || profile.length < 2) return '<div class="profile"><p>Noch kein Höhenprofil berechnet. Die eingetragenen Höhenmeter sind manuelle Angaben.</p></div>';
+        const vals = profile.map(p=>Number(p.elevation)).filter(Number.isFinite);
+        if(vals.length!==profile.length)return '';
+        const lo=Math.min(...vals),hi=Math.max(...vals),span=Math.max(1,hi-lo);
+        const xy=vals.map((v,i)=> (10+i*300/(vals.length-1)).toFixed(1)+','+(97-(v-lo)*80/span).toFixed(1)).join(' ');
+        return '<div class="profile"><p>Höhenprofil · ca. '+Math.round(lo)+'–'+Math.round(hi)+' m ü. NN</p><svg viewBox="0 0 320 110" role="img" aria-label="Höhenprofil der Route"><polyline points="'+xy+'" fill="none" stroke="#8ce0bc" stroke-width="2.5" stroke-linejoin="round"/></svg><p>Geländemodell: Näherungswerte; kurze Treppen, Felsstufen und kleine Steigungen können fehlen.</p></div>';
+      }
+      async function calculateElevationForRoute(route, button) {
+        if(!canManageRoutes())return;
+        const geo=route.geometry;
+        if(!Array.isArray(geo)||geo.length<2){status.textContent='Keine Routengeometrie vorhanden.';return;}
+        button.disabled=true;button.textContent='Höhendaten werden geladen …';
+        try {
+          // Equidistant sampling along the geometry, max. 45 points for public API usage.
+          const cumulative=[0];for(let i=1;i<geo.length;i++)cumulative.push(cumulative[i-1]+geometryDistanceKm([geo[i-1],geo[i]]));
+          const total=cumulative[cumulative.length-1];if(total<=0)throw new Error('Route ohne Länge.');
+          const sampled=[];let idx=1;const n=Math.min(45,Math.max(12,Math.ceil(total*2)));
+          for(let k=0;k<n;k++) {const at=total*k/(n-1);while(idx<cumulative.length-1&&cumulative[idx]<at)idx++;const before=cumulative[idx-1],after=cumulative[idx],t=(at-before)/Math.max(1e-9,after-before);sampled.push([geo[idx-1][0]+t*(geo[idx][0]-geo[idx-1][0]),geo[idx-1][1]+t*(geo[idx][1]-geo[idx-1][1])]);}
+          const loc=sampled.map(p=>p[0].toFixed(5)+','+p[1].toFixed(5)).join('|');
+          const res=await fetch('https://api.opentopodata.org/v1/eudem25m?locations='+encodeURIComponent(loc));
+          if(!res.ok)throw new Error('Höhendienst HTTP '+res.status);
+          const data=await res.json();if(data.status!=='OK'||!Array.isArray(data.results)||data.results.length!==sampled.length)throw new Error('Höhendaten unvollständig');
+          const vals=data.results.map(x=>x.elevation);if(vals.some(x=>!Number.isFinite(x)))throw new Error('Keine Höhendaten für diese Route verfügbar');
+          let gain=0,loss=0;for(let i=1;i<vals.length;i++){const diff=vals[i]-vals[i-1];if(diff>0)gain+=diff;else loss-=diff;}
+          const updated={...route,elevationProfile:vals.map((v,i)=>({km:total*i/(n-1),elevation:v})),elevationGainM:Math.round(gain),elevationLossM:Math.round(loss),updatedAt:new Date().toISOString()};
+          if(remoteConnected)await persistRouteRemote(updated);
+          const ix=routes.findIndex(r=>r.id===route.id);routes[ix]=updated;persistRoutes();renderRoutes();
+          status.textContent='Höhenprofil gespeichert. Höhenmeter sind Modell-Näherungen, keine Vermessung.';
+        }catch(e){status.textContent='Höhenprofil nicht verfügbar: '+(e.message||e)+'. Bitte später erneut versuchen oder Höhenmeter manuell eintragen.';button.disabled=false;button.textContent='Höhenprofil erneut versuchen';}
+      }
+      ['filterSearch','filterDifficulty','filterDistance','filterAscent','filterNoVia'].forEach(id=>$(id).addEventListener('input',renderRoutes));
+      $('routeList').addEventListener('click',e=>{const img=e.target.closest('.route-image img');if(!img)return;$('photoViewerImg').src=img.src;$('photoViewerImg').alt=img.alt;$('photoViewer').hidden=false;});
+      $('photoViewerClose').addEventListener('click',()=>{$('photoViewer').hidden=true;$('photoViewerImg').removeAttribute('src');});
+      $('photoViewer').addEventListener('click',e=>{if(e.target===$('photoViewer'))$('photoViewerClose').click();});
       function editingIsOpen() { return !$('adminPanel').hidden; }
       function canManageRoutes() { return remoteConnected ? !!(currentUser && isAdmin) : editingIsOpen(); }
       $('routeList').addEventListener('click', event => {
@@ -503,7 +587,9 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
         const route = routes.find(item => item.id === card?.dataset.routeId);
         if (!route) return;
         const action = button.dataset.action;
-        if (action === 'show') showRoute(route.id);
+        if (action === 'details') {const el=card.querySelector('.detail-more');el.hidden=!el.hidden;button.textContent=el.hidden?'Tourendetails / Höhenprofil ▾':'Details schließen ▴';}
+        else if (action === 'elevation') calculateElevationForRoute(route, button);
+        else if (action === 'show') showRoute(route.id);
         else if (action === 'start') startNavigation(route.id);
         else if (action === 'export') exportRoute(route);
         else if (action === 'edit') editRoute(route.id);
@@ -892,6 +978,9 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
         const route = {
           id: editingRouteId || (window.crypto && crypto.randomUUID ? crypto.randomUUID() : 'route-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9)),
           name, description, difficulty: $('routeDifficulty').value, mode,
+          durationHours: $('routeDuration').value === '' ? null : Number($('routeDuration').value),
+          routeSurface: $('routeSurface').value,
+          elevationProfile: old?.elevationProfile || null,
           elevationGainM: $('routeAscent').value === '' ? null : Number($('routeAscent').value),
           elevationLossM: $('routeDescent').value === '' ? null : Number($('routeDescent').value),
           features: $('routeFeatures').value.split(',').map(v => v.trim()).filter(Boolean).slice(0, 12),
@@ -910,7 +999,7 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
           persistRoutes();
           renderRoutes();
           $('routeName').value = ''; $('routeDescription').value = '';
-          $('routeAscent').value = ''; $('routeDescent').value = ''; $('routeFeatures').value = ''; $('routePhotos').value = '';
+          $('routeAscent').value = ''; $('routeDescent').value = ''; $('routeDuration').value = ''; $('routeSurface').value = '';  $('routeFeatures').value = ''; $('routePhotos').value = '';
           editingRouteId = null;
           $('editorTitle').textContent = 'Neue Wanderroute anlegen';
           $('deleteEditingRouteBtn').hidden = true;
@@ -933,6 +1022,8 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
         $('routeName').value = route.name || '';
         $('routeDescription').value = route.description || '';
         $('routeDifficulty').value = route.difficulty || 'Mittel';
+        $('routeDuration').value = route.durationHours ?? '';
+        $('routeSurface').value = route.routeSurface || ''; 
         $('routeAscent').value = route.elevationGainM != null && Number.isFinite(Number(route.elevationGainM)) ? route.elevationGainM : '';
         $('routeDescent').value = route.elevationLossM != null && Number.isFinite(Number(route.elevationLossM)) ? route.elevationLossM : '';
         $('routeFeatures').value = Array.isArray(route.features) ? route.features.join(', ') : '';
@@ -967,7 +1058,7 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
           routes = routes.filter(item => item.id !== id);
           persistRoutes();
           if (activeRouteId === id) stopNavigation();
-          if (editingRouteId === id) { editingRouteId = null; $('routeName').value = ''; $('routeDescription').value = ''; $('routeAscent').value = ''; $('routeDescent').value = ''; $('routeFeatures').value = ''; $('routePhotos').value = ''; $('deleteEditingRouteBtn').hidden = true; clearDraft(); }
+          if (editingRouteId === id) { editingRouteId = null; $('routeName').value = ''; $('routeDescription').value = ''; $('routeAscent').value = ''; $('routeDescent').value = ''; $('routeDuration').value = ''; $('routeSurface').value = '';  $('routeFeatures').value = ''; $('routePhotos').value = ''; $('deleteEditingRouteBtn').hidden = true; clearDraft(); }
           if (!routes.length) routeDisplay.clearLayers();
           renderRoutes();
           status.textContent = 'Route gelöscht: ' + route.name + (remoteConnected ? ' und aus der gemeinsamen Datenbank entfernt.' : '.');
@@ -977,7 +1068,7 @@ Wasserfall | https://beispiel.de/bild2.jpg"></textarea><p class="editor-help">Ve
       $('cancelEditorBtn').addEventListener('click', () => {
         clearDraft(); editingRouteId = null;
         $('routeForm').reset();
-        $('routeAscent').value = ''; $('routeDescent').value = ''; $('routeFeatures').value = ''; $('routePhotos').value = '';
+        $('routeAscent').value = ''; $('routeDescent').value = ''; $('routeDuration').value = ''; $('routeSurface').value = '';  $('routeFeatures').value = ''; $('routePhotos').value = '';
         $('routeMode').value = 'places'; $('placeEditor').hidden = false; $('drawEditor').hidden = true;
         $('editorTitle').textContent = 'Neue Wanderroute anlegen'; $('deleteEditingRouteBtn').hidden = true;
         renderRoutes(); status.textContent = 'Bearbeitung abgebrochen.';
